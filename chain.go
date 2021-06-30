@@ -38,7 +38,7 @@ func CheckGetTipsetByKey(ctx context.Context, venusFullNode, nodeFullNode api.Fu
 func CheckChainGetRandomnessFromTickets(ctx context.Context, venusFullNode, nodeFullNode api.FullNode) {
 	ts, err := venusFullNode.ChainHead(ctx)
 	if err != nil {
-		log.Errorf("fail to do CheckGetTipsetByKey %v", err)
+		log.Errorf("fail to do CheckChainGetRandomnessFromTickets %v", err)
 		return
 	}
 	addr, _ := address.NewFromString("f0128788")
@@ -60,6 +60,7 @@ func CheckChainGetRandomnessFromTickets(ctx context.Context, venusFullNode, node
 			return
 		}
 	}
+	log.Infof("success to check api CheckChainGetRandomnessFromTickets")
 }
 
 func CheckChainGetRandomnessFromBeacon(ctx context.Context, venusFullNode, nodeFullNode api.FullNode) {
@@ -87,6 +88,7 @@ func CheckChainGetRandomnessFromBeacon(ctx context.Context, venusFullNode, nodeF
 			return
 		}
 	}
+	log.Infof("success to check api ChainGetRandomnessFromBeacon")
 }
 
 func CheckChainGetBlockMessages(ctx context.Context, venusFullNode, nodeFullNode api.FullNode) {
