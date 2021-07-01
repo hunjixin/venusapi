@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/filecoin-project/go-address"
 	"github.com/filecoin-project/go-state-types/abi"
 	"github.com/filecoin-project/lotus/api"
@@ -194,4 +195,62 @@ func CheckGasEstimateFeeCap(ctx context.Context, venusFullNode, nodeFullNode api
 	}
 
 	log.Infof("success to check api CheckGasEstimateFeeCap")
+}
+
+func CheckGasBatchEstimateFeeCap(ctx context.Context, venusFullNode, nodeFullNode api.FullNode) {
+	headTs, err := nodeFullNode.ChainHead(ctx)
+	if err != nil {
+		log.Errorf("fail to do CheckGasBatchEstimateFeeCap %v", err)
+		return
+	}
+
+	addr, _ := address.NewFromString("f1kc5ami5ejqept4ydpjme5ytzywzvrgfxxsjy57i")
+	actor, err := nodeFullNode.StateGetActor(ctx, addr, headTs.Key())
+	if err != nil {
+		log.Errorf("fail to do CheckGasBatchEstimateFeeCap %v", err)
+		return
+	}
+
+	msg := types.Message{
+		Version:    0,
+		To:         addr,
+		From:       addr,
+		Nonce:      actor.Nonce + 3,
+		Value:      abi.NewTokenAmount(100),
+		GasLimit:   0,
+		GasFeeCap:  abi.NewTokenAmount(50000),
+		GasPremium: abi.TokenAmount{},
+		Method:     0,
+		Params:     nil,
+	}
+
+	estimateMsg := api.EstimateMessage{
+		Msg: &msg,
+		Spec: &api.MessageSendSpec{
+			MaxFee:            abi.NewTokenAmount(100000000000000000),
+			GasOverEstimation: 1.25,
+		},
+	}
+
+	esitimates := []*api.EstimateMessage{&estimateMsg, &estimateMsg, &estimateMsg, &estimateMsg, &estimateMsg, &estimateMsg, &estimateMsg, &estimateMsg, &estimateMsg}
+
+	venuslimit, err := venusFullNode.GasBatchEstimateMessageGas(ctx, esitimates, actor.Nonce, headTs.Key())
+	if err != nil {
+		log.Errorf("fial to do CheckGasBatchEstimateFeeCap %v", err)
+		return
+	}
+	lotusBalance, err := nodeFullNode.GasBatchEstimateMessageGas(ctx, esitimates, actor.Nonce, headTs.Key())
+	if err != nil {
+		log.Errorf("fial to do CheckGasBatchEstimateFeeCap %v", err)
+		return
+	}
+
+	if !checkRaw(venuslimit, lotusBalance) {
+		fmt.Println(showJson(venuslimit))
+		fmt.Println(showJson(lotusBalance))
+		log.Errorf("CheckGasBatchEstimateFeeCap fail venus %v, lotus %v", showJson(venuslimit), showJson(lotusBalance))
+		return
+	}
+
+	log.Infof("success to check api CheckGasBatchEstimateFeeCap")
 }

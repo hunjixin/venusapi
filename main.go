@@ -61,7 +61,7 @@ var runCmd = &cli.Command{
 			return err
 		}
 		venusFullNode := &api.FullNodeStruct{}
-		venusCloser, err := jsonrpc.NewMergeClient(ctx, addr, "Filecoin", []interface{}{&venusFullNode.CommonStruct.Internal, &venusFullNode.Internal}, venusAPIInfo.AuthHeader())
+		venusCloser, err := jsonrpc.NewMergeClient(ctx, addr, "Filecoin", []interface{}{&venusFullNode.VenusAPIStruct.Internal, &venusFullNode.CommonStruct.Internal, &venusFullNode.Internal}, venusAPIInfo.AuthHeader())
 		if err != nil {
 			return err
 		}
@@ -76,7 +76,7 @@ var runCmd = &cli.Command{
 			return err
 		}
 		nodeFullNode := &api.FullNodeStruct{}
-		nodeCloser, err := jsonrpc.NewMergeClient(ctx, nodeAddr, "Filecoin", []interface{}{&nodeFullNode.CommonStruct.Internal, &nodeFullNode.Internal}, nodeAPIInfo.AuthHeader())
+		nodeCloser, err := jsonrpc.NewMergeClient(ctx, nodeAddr, "Filecoin", []interface{}{&nodeFullNode.VenusAPIStruct.Internal, &nodeFullNode.CommonStruct.Internal, &nodeFullNode.Internal}, nodeAPIInfo.AuthHeader())
 		if err != nil {
 			return err
 		}
@@ -112,6 +112,7 @@ var runCmd = &cli.Command{
 			CheckGasEstimateGasPremium,
 			CheckGasEstimateMessageGas,
 			CheckGasEstimateFeeCap,
+			CheckGasBatchEstimateFeeCap,
 
 			CheckGetBaseInfo,
 		}
@@ -127,6 +128,11 @@ func checkRaw(v1, v2 interface{}) bool {
 	v1Raw, _ := json.Marshal(v1)
 	v2Raw, _ := json.Marshal(v2)
 	return bytes.Equal(v1Raw, v2Raw)
+}
+
+func showJson(v1 interface{}) string {
+	v1Raw, _ := json.Marshal(v1)
+	return string(v1Raw)
 }
 
 type CheckFunc func(ctx context.Context, venusFullNode, nodeFullNode api.FullNode)
